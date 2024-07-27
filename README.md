@@ -24,7 +24,7 @@ It's also lighter by removing `vue-plotly` from the dependencies.
 
 ```bash
 # Clone the project
-git clone https://github.com/Seungwoo321/vue-pivottable.git
+git clone https://github.com/Znap-Technologies/vue-pivottable.git
 
 # Go into the cloned directory
 cd vue-pivottable/example/
