@@ -65,8 +65,8 @@ export default {
     appliedFilter() {
       return this.propsData.valueFilter;
     },
-    rendererItems () {
-      return (this.renderers) || Object.assign({}, TableRenderer, PlotlyRenderer)
+    rendererItems() {
+      return this.renderers || Object.assign({}, TableRenderer, PlotlyRenderer);
     },
     aggregatorItems() {
       return this.aggregators || aggregators;
@@ -639,7 +639,15 @@ export default {
         staticClass: ["pvtUi"],
       },
       [
-        colGroupSlot,
+        colGroupSlot ||
+          h("colgroup", [
+            h("col", {
+              attrs: {
+                width: "140px",
+              },
+            }),
+            h("col"),
+          ]),
         h(
           "tbody",
           {
@@ -648,39 +656,20 @@ export default {
             },
           },
           [
-            colGroupSlot ||
-              h("colgroup", [
-                h("col", {
-                  attrs: {
-                    width: "140px",
-                  },
-                }),
-                h("col"),
-              ]),
-            h(
-              "tbody",
-              {
-                on: {
-                  click: this.closeFilterBox,
-                },
-              },
-              [
-                h("tr", [rendererCell, unusedAttrsCell]),
-                h("tr", [aggregatorCell, colAttrsCell]),
-                h("tr", [
-                  rowAttrsCell,
-                  outputSlot
-                    ? h("td", { staticClass: "pvtOutput" }, outputSlot)
-                    : undefined
-                    ? h(
-                        "td",
-                        { staticClass: "pvtOutput" },
-                        outputScopedSlot({ pivotData })
-                      )
-                    : outputCell,
-                ]),
-              ]
-            ),
+            h("tr", [rendererCell, unusedAttrsCell]),
+            h("tr", [aggregatorCell, colAttrsCell]),
+            h("tr", [
+              rowAttrsCell,
+              outputSlot
+                ? h("td", { staticClass: "pvtOutput" }, outputSlot)
+                : undefined
+                ? h(
+                    "td",
+                    { staticClass: "pvtOutput" },
+                    outputScopedSlot({ pivotData })
+                  )
+                : outputCell,
+            ]),
           ]
         ),
       ]
