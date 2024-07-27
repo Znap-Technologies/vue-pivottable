@@ -3,7 +3,6 @@ import DraggableAttribute from "./DraggableAttribute";
 import Dropdown from "./Dropdown";
 import Pivottable from "./Pivottable";
 import TableRenderer from "./TableRenderer";
-import PlotlyRenderer from "./PlotlyRenderer";
 import { PivotData, getSort, sortAs, aggregators } from "./helper/utils";
 import draggable from "vuedraggable";
 export default {
@@ -82,7 +81,7 @@ export default {
       return this.propsData.valueFilter;
     },
     rendererItems() {
-      return this.renderers || Object.assign({}, TableRenderer, PlotlyRenderer);
+      return this.renderers || Object.assign({}, TableRenderer);
     },
     aggregatorItems() {
       return this.aggregators || aggregators;
@@ -587,11 +586,7 @@ export default {
           staticClass: ["pvtOutput"],
         },
         [
-          isPlotlyRenderer
-            ? h(PlotlyRenderer[props.rendererName], {
-                props,
-              })
-            : h(Pivottable, {
+             h(Pivottable, {
                 props: {
                   ...props,
                   tableMaxWidth: this.tableMaxWidth,
