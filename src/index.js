@@ -1,6 +1,7 @@
 import VuePivottable from './Pivottable'
 import VuePivottableUi from './PivottableUi'
 import TableRenderer from './TableRenderer'
+import VuePivottablePreview from './PivottablePreview'
 
 import {
   aggregatorTemplates,
@@ -11,8 +12,8 @@ import {
   numberFormat,
   getSort,
   sortAs,
-  PivotData
-} from './helper/utils'
+  PivotData,
+} from "./helper/utils";
 
 const PivotUtilities = {
   aggregatorTemplates,
@@ -23,8 +24,8 @@ const PivotUtilities = {
   numberFormat,
   getSort,
   sortAs,
-  PivotData
-}
+  PivotData,
+};
 
 const Renderer = {
   TableRenderer
@@ -32,20 +33,22 @@ const Renderer = {
 
 const components = {
   VuePivottable,
-  VuePivottableUi
-}
+  VuePivottableUi,
+  VuePivottablePreview,
+};
 
-if (typeof window !== 'undefined' && window.Vue) window.Vue.use(VuePivottable)
+if (typeof window !== "undefined" && window.Vue) window.Vue.use(VuePivottable);
 
 export {
   VuePivottable,
   VuePivottableUi,
+  VuePivottablePreview,
   PivotUtilities,
-  Renderer
-}
+  Renderer,
+};
 
 export default (Vue) => {
   for (const key in components) {
-    Vue.component(components[key].name, components[key])
+    Vue.component(components[key].name, components[key]);
   }
-}
+};
