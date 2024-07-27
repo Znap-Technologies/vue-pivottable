@@ -18,7 +18,7 @@ export default {
   props: {
     async: {
       type: Boolean,
-      default: false
+      default: false,
     },
     hiddenAttributes: {
       type: Array,
@@ -73,19 +73,28 @@ export default {
     appliedFilter() {
       return this.propsData.valueFilter;
     },
-    tableRenderer () {
-      const makeRenderer = TableRenderer.makeRenderer
+    tableRenderer() {
+      const makeRenderer = TableRenderer.makeRenderer;
       return {
-        Table: makeRenderer({ name: 'vue-table' }),
-        'Table Heatmap': makeRenderer({ heatmapMode: 'full', name: 'vue-table-heatmap' }),
-        'Table Col Heatmap': makeRenderer({ heatmapMode: 'col', name: 'vue-table-col-heatmap' }),
-        'Table Row Heatmap': makeRenderer({ heatmapMode: 'row', name: 'vue-table-col-heatmap' }),
-        'Export Table TSV': TableRenderer.TSVExportRenderer
-      }
+        Table: makeRenderer({ name: "vue-table" }),
+        "Table Heatmap": makeRenderer({
+          heatmapMode: "full",
+          name: "vue-table-heatmap",
+        }),
+        "Table Col Heatmap": makeRenderer({
+          heatmapMode: "col",
+          name: "vue-table-col-heatmap",
+        }),
+        "Table Row Heatmap": makeRenderer({
+          heatmapMode: "row",
+          name: "vue-table-col-heatmap",
+        }),
+        "Export Table TSV": TableRenderer.TSVExportRenderer,
+      };
     },
-    rendererItems () {
-      const TableRenderer = this.tableRenderer
-      return (this.renderers) || Object.assign({}, TableRenderer, PlotlyRenderer)
+    rendererItems() {
+      const TableRenderer = this.tableRenderer;
+      return this.renderers || Object.assign({}, TableRenderer, PlotlyRenderer);
     },
     aggregatorItems() {
       return this.aggregators || aggregators;
@@ -235,9 +244,9 @@ export default {
           rendererName: value.rendererName,
           aggregatorName: value.aggregatorName,
           aggregators: this.aggregatorItems,
-          vals: value.vals
-        }
-        this.$emit('onRefresh', props)
+          vals: value.vals,
+        };
+        this.$emit("onRefresh", props);
       },
       immediate: false,
       deep: true,
@@ -260,17 +269,17 @@ export default {
           : Object.keys(this.attrValues);
       this.unusedOrder = this.unusedAttrs;
 
-     Object.keys(this.attrValues).forEach(key => {
-        let valueFilter = {}
-        const values = this.valueFilter && this.valueFilter[key]
+      Object.keys(this.attrValues).forEach((key) => {
+        let valueFilter = {};
+        const values = this.valueFilter && this.valueFilter[key];
         if (values && Object.keys(values).length) {
-          valueFilter = this.valueFilter[key]
+          valueFilter = this.valueFilter[key];
         }
         this.updateValueFilter({
           attribute: key,
-          valueFilter
-        })
-      })
+          valueFilter,
+        });
+      });
     },
     assignValue(field) {
       this.$set(this.propsData.valueFilter, field, {});
@@ -287,8 +296,8 @@ export default {
       this.maxZIndex += 1;
       this.zIndices[attribute] = this.maxZIndex + 1;
     },
-    openFilterBox ({ attribute, open }) {
-      this.$set(this.openStatus, attribute, open)
+    openFilterBox({ attribute, open }) {
+      this.$set(this.openStatus, attribute, open);
     },
     closeFilterBox(event) {
       this.openStatus = {};
@@ -370,14 +379,14 @@ export default {
                 valueFilter: this.propsData.valueFilter[x],
                 open: this.openStatus[x],
                 unused: this.unusedAttrs.includes(x),
-                localeStrings: this.locales[this.locale].localeStrings
+                localeStrings: this.locales[this.locale].localeStrings,
               },
               domProps: {},
               on: {
                 "update:filter": this.updateValueFilter,
                 "moveToTop:filterbox": this.moveFilterBoxToTop,
                 "open:filterbox": this.openFilterBox,
-                'no:filterbox': () => this.$emit('no:filterbox')
+                "no:filterbox": () => this.$emit("no:filterbox"),
               },
             });
           }),
@@ -403,8 +412,7 @@ export default {
                 props: {
                   values: Object.keys(this.rendererItems),
                   value: rendererName,
-                  localeStrings: this.locales[this.locale].rendererMap
-
+                  localeStrings: this.locales[this.locale].rendererMap,
                 },
                 domProps: {
                   value: rendererName,
@@ -487,7 +495,7 @@ export default {
                   props: {
                     values: Object.keys(this.aggregatorItems),
                     value: aggregatorName,
-                    localeStrings: this.locales[this.locale].aggregatorMap
+                    localeStrings: this.locales[this.locale].aggregatorMap,
                   },
                   // domProps: {
                   //   value: aggregatorName,
@@ -647,30 +655,21 @@ export default {
         return this.computeError(h);
       }
     }
-    const rendererCell = this.rendererCell(rendererName, h)
-    const aggregatorCell = this.aggregatorCell(aggregatorName, vals, h)
-    const outputCell = this.outputCell(props, rendererName.indexOf('Chart') > -1, h)
-    const colGroupSlot = this.$slots.colGroup
-    return h('table', {
-      staticClass: ['pvtUi']
-    },
-    [
-      colGroupSlot,
-      h('tbody', {
-        on: {
-          'click': this.closeFilterBox
-        }
+    const rendererCell = this.rendererCell(rendererName, h);
+    const aggregatorCell = this.aggregatorCell(aggregatorName, vals, h);
+    const outputCell = this.outputCell(
+      props,
+      rendererName.indexOf("Chart") > -1,
+      h
+    );
+    const colGroupSlot = this.$slots.colGroup;
+    return h(
+      "table",
+      {
+        staticClass: ["pvtUi"],
       },
       [
-        colGroupSlot ||
-          h("colgroup", [
-            h("col", {
-              attrs: {
-                width: "140px",
-              },
-            }),
-            h("col"),
-          ]),
+        colGroupSlot,
         h(
           "tbody",
           {
@@ -679,33 +678,43 @@ export default {
             },
           },
           [
-            h("tr", [rendererCell, unusedAttrsCell]),
-            h("tr", [aggregatorCell, colAttrsCell]),
-            h("tr", [
-              rowAttrsCell,
-              outputSlot
-                ? h("td", { staticClass: "pvtOutput" }, outputSlot)
-                : limitOver
-                ? h(
-                    "td",
-                    { staticClass: "pvtOutput" },
-                    outputScopedSlot({ pivotData: new PivotData(props) })
-                  )
-                : outputCell,
-            ]),
-          ],
-          h('tr',
-            [
-              rowAttrsCell,
-              outputSlot && !outputScopedSlot ? h('td', { staticClass: 'pvtOutput' }, outputSlot) : undefined,
-              outputScopedSlot && !outputSlot ? h('td', { staticClass: 'pvtOutput' }, outputScopedSlot({ pivotData })) : undefined,
-              !outputSlot && !outputScopedSlot ? outputCell : undefined
-            ]
-          )
-        )
-       ])
-    ]
-   )
+            colGroupSlot ||
+              h("colgroup", [
+                h("col", {
+                  attrs: {
+                    width: "140px",
+                  },
+                }),
+                h("col"),
+              ]),
+            h(
+              "tbody",
+              {
+                on: {
+                  click: this.closeFilterBox,
+                },
+              },
+              [
+                h("tr", [rendererCell, unusedAttrsCell]),
+                h("tr", [aggregatorCell, colAttrsCell]),
+                h("tr", [
+                  rowAttrsCell,
+                  outputSlot
+                    ? h("td", { staticClass: "pvtOutput" }, outputSlot)
+                    : undefined
+                    ? h(
+                        "td",
+                        { staticClass: "pvtOutput" },
+                        outputScopedSlot({ pivotData })
+                      )
+                    : outputCell,
+                ]),
+              ]
+            ),
+          ]
+        ),
+      ]
+    );
   },
   renderError(h, error) {
     return this.uiRenderError(h);
