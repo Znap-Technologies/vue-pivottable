@@ -297,55 +297,28 @@ function makeRenderer(opts = {}) {
                     );
                   }),
 
-                  colKeys.map((colKey, j) => {
-                    const aggregator = pivotData.getAggregator(rowKey, colKey);
-                    return h(
-                      "td",
-                      {
-                        staticClass: ["pvVal"],
-                        style: valueCellColors(
-                          rowKey,
-                          colKey,
-                          aggregator.value()
-                        ),
-                        attrs: {
-                          key: `pvtVal${i}-${j}`,
-                        },
-                        on: getClickHandler
-                          ? {
-                              click: getClickHandler(
-                                aggregator.value(),
-                                rowKey,
-                                colKey
-                              ),
-                            }
-                          : {},
-                      },
-                      aggregator.format(aggregator.value())
-                    );
-                  }),
+                colKeys.map((colKey, j) => {
+                  const aggregator = pivotData.getAggregator(rowKey, colKey)
+                  return h('td', {
+                    staticClass: ['pvVal'],
+                    style: valueCellColors(rowKey, colKey, aggregator.value()),
+                    attrs: {
+                      key: `pvtVal${i}-${j}`
+                    },
+                    on: this.tableOptions.clickCallback ? {
+                      click: getClickHandler(aggregator.value(), rowKey, colKey)
+                    } : {}
+                  }, aggregator.format(aggregator.value()))
+                }),
 
-                  this.rowTotal
-                    ? h(
-                        "td",
-                        {
-                          staticClass: ["pvtTotal"],
-                          style: colTotalColors(totalAggregator.value()),
-                          on: getClickHandler
-                            ? {
-                                click: getClickHandler(
-                                  totalAggregator.value(),
-                                  rowKey,
-                                  []
-                                ),
-                              }
-                            : {},
-                        },
-                        totalAggregator.format(totalAggregator.value())
-                      )
-                    : undefined,
-                ]
-              );
+                this.rowTotal ? h('td', {
+                  staticClass: ['pvtTotal'],
+                  style: colTotalColors(totalAggregator.value()),
+                  on: this.tableOptions.clickCallback ? {
+                    click: getClickHandler(totalAggregator.value(), rowKey, [])
+                  } : {}
+                }, totalAggregator.format(totalAggregator.value())) : undefined
+              ])
             }),
 
             h("tr", [
