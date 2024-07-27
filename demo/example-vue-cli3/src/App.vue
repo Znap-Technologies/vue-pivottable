@@ -39,12 +39,18 @@
           @no:filterbox="noFilterbox"
         >
           <!-- Slot ColGroup -->
-          <colgroup slot="colGroup">
-              <col :width="300">
-              <col>
-          </colgroup>
-
+          <template v-slot:colGroup>
+            <colgroup >
+                <col :width="300">
+                <col>
+            </colgroup>
+          </template>
           <!-- Slot Output -->
+          <!-- <template v-slot:output>
+            <div v-if="loading">
+              loading...
+            </div>
+          </template> -->
           <div v-if="loading" slot="output">
             loading...
           </div>
@@ -110,8 +116,8 @@ import tips from './tips'
 import { VuePivottableUi, PivotUtilities, Renderer } from '../../../src'
 import '../../../src/assets/vue-pivottable.css'
 import { scaleLinear } from 'd3-scale'
-// const HeatmapRenderer = Renderer.TableRenderer.makeRenderer({ heatmapMode: 'full' })
-// const TableRenderer = Renderer.TableRenderer.makeRenderer()
+// const HeatmapRenderer = Renderer.TableRenderer['Table Heatmap']
+// const TableRenderer = Renderer.TableRenderer['Table']
 
 export default {
   components: {
@@ -124,8 +130,6 @@ export default {
   data () {
     return {
       viewTable: false,
-      colLimit: 10,
-      rowLimit: 10,
       // fix issue #27
       valueFilter: {
         Meal: {
