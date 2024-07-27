@@ -16,10 +16,10 @@ export default {
     createPivottable (h) {
       const props = this.$props
       return h(this.rendererItems[this.rendererName], {
-        props: {
-          ...props,
-          localeStrings: props.locales[props.locale].localeStrings
-        }
+        props: Object.assign(
+          props,
+          { localeStrings: props.locales[props.locale].localeStrings }
+        )
       })
     },
     createWrapperContainer (h) {

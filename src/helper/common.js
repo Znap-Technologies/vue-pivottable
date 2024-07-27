@@ -111,6 +111,14 @@ export default {
       validator: function (value) {
         return value >= 0
       }
+    },
+    colLimit: {
+      type: Number,
+      default: 100
+    },
+    rowLimit: {
+      type: Number,
+      default: 100
     }
   },
   methods: {

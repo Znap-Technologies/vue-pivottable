@@ -82,10 +82,10 @@ function makeRenderer(opts = {}) {
     render(h) {
       let pivotData = null;
       try {
-        const props = {
-          ...this.$props,
-          ...this.$attrs.props
-        }
+        const props = Object.assign({},
+          this.$props,
+          this.$attrs.props
+        )
         pivotData = new PivotData(props)
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -399,10 +399,22 @@ function makeRenderer(opts = {}) {
 const TSVExportRenderer = {
   name: "tsv-export-renderers",
   mixins: [defaultProps],
-  render(h) {
-    const pivotData = new PivotData(this.$props);
-    const rowKeys = pivotData.getRowKeys();
-    const colKeys = pivotData.getColKeys();
+  render (h) {
+    let pivotData = null
+    try {
+      const props = Object.assign({},
+        this.$props,
+        this.$attrs.props
+      )
+      pivotData = new PivotData(props)
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      if (console && console.error(error.stack)) {
+        return this.computeError(h)
+      }
+    }
+    const rowKeys = pivotData.getRowKeys()
+    const colKeys = pivotData.getColKeys()
     if (rowKeys.length === 0) {
       rowKeys.push([]);
     }

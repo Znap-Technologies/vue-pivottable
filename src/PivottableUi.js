@@ -1,12 +1,10 @@
-/* eslint-disable no-unused-vars */
-import defaultProps from "./helper/common";
-import DraggableAttribute from "./DraggableAttribute";
-import Dropdown from "./Dropdown";
-import Pivottable from "./Pivottable";
-import TableRenderer from "./TableRenderer";
-import PlotlyRenderer from "./PlotlyRenderer";
-import { PivotData, getSort, sortAs, aggregators } from "./helper/utils";
-import draggable from "vuedraggable";
+import defaultProps from './helper/common'
+import DraggableAttribute from './DraggableAttribute'
+import Dropdown from './Dropdown'
+import Pivottable from './Pivottable'
+import TableRenderer from './TableRenderer'
+import { PivotData, getSort, sortAs, aggregators } from './helper/utils'
+import draggable from 'vuedraggable'
 
 export default {
   name: "vue-pivottable-ui",
@@ -65,8 +63,8 @@ export default {
     appliedFilter() {
       return this.propsData.valueFilter;
     },
-    rendererItems() {
-      return this.renderers || Object.assign({}, TableRenderer, PlotlyRenderer);
+    rendererItems () {
+      return (this.renderers) || Object.assign({}, TableRenderer)
     },
     aggregatorItems() {
       return this.aggregators || aggregators;
@@ -113,6 +111,24 @@ export default {
         cols: [],
         rows: [],
         attributes: [],
+        /**
+         * ValueFilter's keys with the special field '*' will match all values and filter them out (true) or show (false).
+         Sample:
+          ```
+          valueFilter: {
+            field1: {
+              '*': true, // filter out all values
+              'value1': true, // filter out value1
+              'value2': false // select to display value2
+            },
+            field2: {
+              '*': false, // select to display all values
+              'value1': true, // filter out value1
+              'value2': false // select to display value2
+            }
+          }
+          ```
+        */
         valueFilter: {},
         renderer: null,
       },
@@ -147,6 +163,16 @@ export default {
   //   this.materializeInput(nextProps.data)
   // },
   watch: {
+    rowOrder: {
+      handler (value) {
+        this.propsData.rowOrder = value
+      }
+    },
+    colOrder: {
+      handler (value) {
+        this.propsData.colOrder = value
+      }
+    },
     cols: {
       handler(value) {
         this.propsData.cols = value;
@@ -223,33 +249,43 @@ export default {
     },
   },
   methods: {
-    init() {
-      this.materializeInput(this.data);
-      this.propsData.vals = this.vals.slice();
-      this.propsData.rows = this.rows;
-      this.propsData.cols = this.cols;
-      this.propsData.rowOrder = this.rowOrder;
-      this.propsData.colOrder = this.colOrder;
-      this.propsData.rendererName = this.rendererName;
-      this.propsData.aggregatorName = this.aggregatorName;
-      this.propsData.sorters = this.sorters;
-      this.propsData.attributes =
-        this.attributes.length > 0
-          ? this.attributes
-          : Object.keys(this.attrValues);
-      this.unusedOrder = this.unusedAttrs;
-
-      Object.keys(this.attrValues).forEach((key) => {
-        let valueFilter = {};
-        const values = this.valueFilter && this.valueFilter[key];
-        if (values && Object.keys(values).length) {
-          valueFilter = this.valueFilter[key];
+    init () {
+      this.materializeInput(this.data)
+      this.propsData.vals = this.vals.slice()
+      this.propsData.rows = this.rows
+      this.propsData.cols = this.cols
+      this.propsData.rowOrder = this.rowOrder
+      this.propsData.colOrder = this.colOrder
+      this.propsData.rendererName = this.rendererName
+      this.propsData.aggregatorName = this.aggregatorName
+      this.propsData.attributes = this.attributes.length > 0 ? this.attributes : Object.keys(this.attrValues)
+      this.unusedOrder = this.unusedAttrs
+      const allSelector = '*'
+      Object.entries(this.attrValues).forEach(([key, values]) => {
+        let attributes = {}
+        const valueFilterItem = this.valueFilter && this.valueFilter[key]
+        if (valueFilterItem && Object.keys(valueFilterItem).length) {
+          if (valueFilterItem[allSelector] === true) {
+            // add all keys to be filtered out
+            Object.keys(values).forEach(k => {
+              if (k !== allSelector) {
+                const keyPresent = valueFilterItem[k]
+                if (keyPresent === undefined || keyPresent === true) {
+                  attributes[k] = true
+                } else {
+                  // attributes[k] = false
+                }
+              }
+            })
+          } else {
+            attributes = valueFilterItem
+          }
         }
         this.updateValueFilter({
           attribute: key,
-          valueFilter,
-        });
-      });
+          valueFilter: attributes
+        })
+      })
     },
     assignValue(field) {
       this.$set(this.propsData.valueFilter, field, {});
@@ -280,29 +316,27 @@ export default {
       const attrValues = {};
       const materializedInput = [];
       let recordsProcessed = 0;
-      PivotData.forEachRecord(
-        this.pivotData,
-        this.derivedAttributes,
-        function (record) {
-          materializedInput.push(record);
-          for (const attr of Object.keys(record)) {
-            if (!(attr in attrValues)) {
-              attrValues[attr] = {};
-              if (recordsProcessed > 0) {
-                attrValues[attr].null = recordsProcessed;
-              }
-            }
-          }
-          for (const attr in attrValues) {
-            const value = attr in record ? record[attr] : "null";
-            if (!(value in attrValues[attr])) {
-              attrValues[attr][value] = 0;
-            }
-            attrValues[attr][value]++;
-          }
-          recordsProcessed++;
-        }
-      );
+
+      PivotData.forEachRecord(this.pivotData, this.derivedAttributes, function (record) {
+       materializedInput.push(record)
+       for (const attr of Object.keys(record)) {
+         if (!(attr in attrValues)) {
+           attrValues[attr] = {}
+           if (recordsProcessed > 0) {
+             attrValues[attr].null = recordsProcessed
+           }
+         }
+       }
+       for (const attr in attrValues) {
+         const value = attr in record ? record[attr] : 'null'
+         if (!(value in attrValues[attr])) {
+           attrValues[attr][value] = 0
+         }
+         attrValues[attr][value]++
+       }
+       recordsProcessed++
+     })
+
       this.materializedInput = materializedInput;
       this.attrValues = attrValues;
     },
@@ -523,6 +557,19 @@ export default {
         ]
       );
     },
+    outputCell (props, isPlotlyRenderer, h) {
+      return h('td', {
+        staticClass: ['pvtOutput']
+      },
+      [
+        h(Pivottable, {
+          props: Object.assign(
+            props,
+            { tableMaxWidth: this.tableMaxWidth }
+          )
+        })
+      ])
+    }
   },
   render(h) {
     if (this.data.length < 1) return;
@@ -601,9 +648,9 @@ export default {
       },
       "pvtAxisContainer pvtVertList pvtRows",
       h
-    );
-    const props = {
-      ...this.$props,
+    )
+
+    const props = Object.assign({}, this.$props, {
       localeStrings: this.localeStrings,
       data: this.materializedInput,
       rowOrder: this.propsData.rowOrder,
@@ -614,9 +661,10 @@ export default {
       aggregators: this.aggregatorItems,
       rendererName,
       aggregatorName,
-      vals,
-    };
-    let pivotData = null;
+      vals
+    })
+
+    let pivotData = null
     try {
       pivotData = new PivotData(props);
     } catch (error) {
