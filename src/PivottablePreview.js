@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import defaultProps from "./helper/common";
 import DraggableAttribute from "./DraggableAttribute";
 import Dropdown from "./Dropdown";
@@ -7,7 +6,6 @@ import TableRenderer from "./TableRenderer";
 import PlotlyRenderer from "./PlotlyRenderer";
 import { PivotData, getSort, sortAs, aggregators } from "./helper/utils";
 import draggable from "vuedraggable";
-
 export default {
   name: "vue-pivottable-ui",
   mixins: [defaultProps],
@@ -20,33 +18,43 @@ export default {
       type: Boolean,
       default: false
     },
+    pivotFilters: {
+      type: Object,
+      default: function() {
+        return [];
+      },
+    },
+    setFilter: {
+      type: Number,
+      default: 0,
+    },
     hiddenAttributes: {
       type: Array,
-      default: function () {
+      default: function() {
         return [];
       },
     },
     hiddenFromAggregators: {
       type: Array,
-      default: function () {
+      default: function() {
         return [];
       },
     },
     hiddenFromDragDrop: {
       type: Array,
-      default: function () {
+      default: function() {
         return [];
       },
     },
     sortonlyFromDragDrop: {
       type: Array,
-      default: function () {
+      default: function() {
         return [];
       },
     },
     disabledFromDragDrop: {
       type: Array,
-      default: function () {
+      default: function() {
         return [];
       },
     },
@@ -64,7 +72,7 @@ export default {
     },
     config: {
       type: Object,
-      default: function () {
+      default: function() {
         return {};
       },
     },
@@ -151,10 +159,69 @@ export default {
       },
     };
   },
-  // beforeUpdated (nextProps) {
-  //   this.materializeInput(nextProps.data)
-  // },
+  beforeUpdated(nextProps) {
+    this.materializeInput(nextProps.data);
+  },
+
+  created() {
+  //   this.$root.$on("setValueFilter", ($event) => {
+  //     // console.log('teste')
+  //     Object.keys($event).forEach((filter) => {
+  //       let count = 0;
+  //       count = Object.keys($event[filter]).length;
+  //       if (count > 0) {
+  //         let fields = $event[filter];
+  //         this.updateValueFilter({ attribute: filter, valueFilter: fields });
+  //       }
+  //     });
+  //     //for(let attr in $event) {
+  //     // console.log($event[attr])
+  //     // for(let field in attr) {
+  //     // console.log(attr[field])
+  //     // if (attr[field] === true) {
+  //     // console.log(field)
+  //     // }
+  //     // }
+  //     //}
+  //     // this.updateValueFilter()
+  //   });
+    this.$root.$on("setRowOrder", ($event) => {
+      this.propsData.rowOrder = $event
+      this.propUpdater("rowOrder")(
+        this.sortIcons[this.propsData.rowOrder].next
+        );
+    })
+
+    this.$root.$on("setColOrder", ($event) => {
+      this.propsData.colOrder = $event
+      this.propUpdater("colOrder")(
+        this.sortIcons[this.propsData.colOrder].next
+        );
+    })
+  },
+
   watch: {
+    // sorters: {
+    //   handler (value) {
+    //     console.log(value)
+    //   }
+    // },
+    // setFilter: {
+    //   immediate: true,
+    //   deep: true,
+    //   handler (val) {
+    //     console.log(val)
+    //     Object.keys(this.pivotFilters).forEach((filter) => {
+    //       let count = 0
+    //       count = Object.keys(this.pivotFilters[filter]).length
+    //       if(count > 0) {
+    //         let fields = this.pivotFilters[filter]
+
+    //         this.updateValueFilter({attribute: filter, valueFilter: fields})
+    //       }
+    //     })
+    //   }
+    // },
     cols: {
       handler(value) {
         this.propsData.cols = value;
@@ -171,7 +238,8 @@ export default {
       },
     },
     appliedFilter: {
-      handler(value, oldValue) {
+      // handler (value, oldValue) {
+      handler(value) {
         this.$emit("update:valueFilter", value);
       },
       immediate: true,
@@ -185,8 +253,17 @@ export default {
       deep: true,
     },
     data: {
-      handler(value) {
+      // handler (value) {
+      handler() {
         this.init();
+        Object.keys(this.pivotFilters).forEach((filter) => {
+          let count = 0;
+          count = Object.keys(this.pivotFilters[filter]).length;
+          if (count > 0) {
+            let fields = this.pivotFilters[filter];
+            this.updateValueFilter({ attribute: filter, valueFilter: fields });
+          }
+        });
       },
       immediate: true,
       deep: true,
@@ -201,7 +278,6 @@ export default {
     propsData: {
       handler(value) {
         if (this.pivotData.length === 0) return;
-
         const props = {
           derivedAttributes: this.derivedAttributes,
           hiddenAttributes: this.hiddenAttributes,
@@ -226,6 +302,7 @@ export default {
           aggregators: this.aggregatorItems,
           vals: value.vals
         }
+
         this.$emit('onRefresh', props)
       },
       immediate: false,
@@ -249,7 +326,7 @@ export default {
           : Object.keys(this.attrValues);
       this.unusedOrder = this.unusedAttrs;
 
-     Object.keys(this.attrValues).forEach(key => {
+       Object.keys(this.attrValues).forEach(key => {
         let valueFilter = {}
         const values = this.valueFilter && this.valueFilter[key]
         if (values && Object.keys(values).length) {
@@ -271,6 +348,7 @@ export default {
     },
     updateValueFilter({ attribute, valueFilter }) {
       this.$set(this.propsData.valueFilter, attribute, valueFilter);
+      this.$root.$emit("getValueFilter", this.propsData.valueFilter);
     },
     moveFilterBoxToTop({ attribute }) {
       this.maxZIndex += 1;
@@ -279,7 +357,8 @@ export default {
     openFilterBox({ attribute, open }) {
       this.openStatus[attribute] = open;
     },
-    closeFilterBox(event) {
+    // closeFilterBox (event) {
+    closeFilterBox() {
       this.openStatus = {};
     },
     materializeInput(nextData) {
@@ -290,29 +369,27 @@ export default {
       const attrValues = {};
       const materializedInput = [];
       let recordsProcessed = 0;
-      PivotData.forEachRecord(
-        this.pivotData,
-        this.derivedAttributes,
-        function (record) {
-          materializedInput.push(record);
-          for (const attr of Object.keys(record)) {
-            if (!(attr in attrValues)) {
-              attrValues[attr] = {};
-              if (recordsProcessed > 0) {
-                attrValues[attr].null = recordsProcessed;
-              }
+      PivotData.forEachRecord(this.pivotData, this.derivedAttributes, function(
+        record
+      ) {
+        materializedInput.push(record);
+        for (const attr of Object.keys(record)) {
+          if (!(attr in attrValues)) {
+            attrValues[attr] = {};
+            if (recordsProcessed > 0) {
+              attrValues[attr].null = recordsProcessed;
             }
           }
-          for (const attr in attrValues) {
-            const value = attr in record ? record[attr] : "null";
-            if (!(value in attrValues[attr])) {
-              attrValues[attr][value] = 0;
-            }
-            attrValues[attr][value]++;
-          }
-          recordsProcessed++;
         }
-      );
+        for (const attr in attrValues) {
+          const value = attr in record ? record[attr] : "null";
+          if (!(value in attrValues[attr])) {
+            attrValues[attr][value] = 0;
+          }
+          attrValues[attr][value]++;
+        }
+        recordsProcessed++;
+      });
       this.materializedInput = materializedInput;
       this.attrValues = attrValues;
     },
@@ -358,6 +435,7 @@ export default {
                 zIndex: this.zIndices[x] || this.maxZIndex,
                 valueFilter: this.propsData.valueFilter[x],
                 open: this.openStatus[x],
+                async: this.async,
                 unused: this.unusedAttrs.includes(x),
                 localeStrings: this.locales[this.locale].localeStrings
               },
@@ -366,7 +444,6 @@ export default {
                 "update:filter": this.updateValueFilter,
                 "moveToTop:filterbox": this.moveFilterBoxToTop,
                 "open:filterbox": this.openFilterBox,
-                'no:filterbox': () => this.$emit('no:filterbox')
               },
             });
           }),
@@ -391,12 +468,7 @@ export default {
               h(Dropdown, {
                 props: {
                   values: Object.keys(this.rendererItems),
-                  value: rendererName,
-                  localeStrings: this.locales[this.locale].rendererMap
-
-                },
-                domProps: {
-                  value: rendererName,
+                  value: rendererName
                 },
                 on: {
                   input: (value) => {
@@ -405,6 +477,7 @@ export default {
                       "renderer",
                       this.rendererItems[this.rendererName]
                     );
+                    this.$root.$emit("getView", value);
                   },
                 },
               }),
@@ -426,48 +499,6 @@ export default {
               staticClass: ["pvtVals"],
             },
             [
-              h(
-                "a",
-                {
-                  staticClass: ["pvtRowOrder"],
-                  attrs: {
-                    role: "button",
-                  },
-                  on: {
-                    click: () => {
-                      this.propUpdater("rowOrder")(
-                        this.sortIcons[this.propsData.rowOrder].next
-                      );
-                      this.$root.$emit(
-                        "changeRowOrder",
-                        this.propsData.rowOrder
-                      );
-                    },
-                  },
-                },
-                this.sortIcons[this.propsData.rowOrder].rowSymbol
-              ),
-              h(
-                "a",
-                {
-                  staticClass: ["pvtColOrder"],
-                  attrs: {
-                    role: "button",
-                  },
-                  on: {
-                    click: () => {
-                      this.propUpdater("colOrder")(
-                        this.sortIcons[this.propsData.colOrder].next
-                      );
-                      this.$root.$emit(
-                        "changeColOrder",
-                        this.propsData.colOrder
-                      );
-                    },
-                  },
-                },
-                this.sortIcons[this.propsData.colOrder].colSymbol
-              ),
               h("div", [
                 h(Dropdown, {
                   style: {
@@ -475,12 +506,11 @@ export default {
                   },
                   props: {
                     values: Object.keys(this.aggregatorItems),
-                    value: aggregatorName,
-                    localeStrings: this.locales[this.locale].aggregatorMap
+                    value: aggregatorName
                   },
-                  // domProps: {
-                  //   value: aggregatorName,
-                  // },
+                  domProps: {
+                    value: aggregatorName,
+                  },
                   on: {
                     input: (value) => {
                       this.$root.$emit("changeVal", value);
@@ -488,6 +518,42 @@ export default {
                     },
                   },
                 }),
+                h(
+                  "a",
+                  {
+                    staticClass: ["pvtRowOrder"],
+                    attrs: {
+                      role: "button",
+                    },
+                    on: {
+                      click: () => {
+                        this.propUpdater("rowOrder")(
+                          this.sortIcons[this.propsData.rowOrder].next
+                          );
+                          this.$root.$emit("changeRowOrder", this.rowOrder)
+                      },
+                    },
+                  },
+                  this.sortIcons[this.propsData.rowOrder].rowSymbol
+                ),
+                h(
+                  "a",
+                  {
+                    staticClass: ["pvtColOrder"],
+                    attrs: {
+                      role: "button",
+                    },
+                    on: {
+                      click: () => {
+                        this.propUpdater("colOrder")(
+                          this.sortIcons[this.propsData.colOrder].next
+                          );
+                          this.$root.$emit("changeColOrder", this.colOrder)
+                      },
+                    },
+                  },
+                  this.sortIcons[this.propsData.colOrder].colSymbol
+                ),
               ]),
               this.numValsAllowed > 0
                 ? new Array(this.numValsAllowed).fill().map((n, i) => [
@@ -536,83 +602,11 @@ export default {
     },
   },
   render(h) {
-    if (this.data.length < 1) return;
     const outputScopedSlot = this.$scopedSlots.output;
     const outputSlot = this.$slots.output;
     const rendererName = this.propsData.rendererName;
     const aggregatorName = this.propsData.aggregatorName;
     const vals = this.propsData.vals;
-    const unusedAttrsCell = this.makeDnDCell(
-      this.unusedAttrs,
-      (e) => {
-        const item = e.item.getAttribute("data-id");
-        if (
-          this.sortonlyFromDragDrop.includes(item) &&
-          (!e.from.classList.contains("pvtUnused") ||
-            !e.to.classList.contains("pvtUnused"))
-        ) {
-          return;
-        }
-        if (e.from.classList.contains("pvtUnused")) {
-          this.openFilterBox({ attribute: item, open: false });
-          this.unusedOrder.splice(e.oldIndex, 1);
-          this.$emit("dragged:unused", item);
-        }
-        if (e.to.classList.contains("pvtUnused")) {
-          this.openFilterBox({ attribute: item, open: false });
-          this.unusedOrder.splice(e.newIndex, 0, item);
-          this.$emit("dropped:unused", item);
-        }
-      },
-      `pvtAxisContainer pvtUnused pvtHorizList`,
-      h
-    );
-    const colAttrsCell = this.makeDnDCell(
-      this.colAttrs,
-      (e) => {
-        const item = e.item.getAttribute("data-id");
-        if (
-          this.sortonlyFromDragDrop.includes(item) &&
-          (!e.from.classList.contains("pvtCols") ||
-            !e.to.classList.contains("pvtCols"))
-        ) {
-          return;
-        }
-        if (e.from.classList.contains("pvtCols")) {
-          this.propsData.cols.splice(e.oldIndex, 1);
-          this.$emit("dragged:cols", item);
-        }
-        if (e.to.classList.contains("pvtCols")) {
-          this.propsData.cols.splice(e.newIndex, 0, item);
-          this.$emit("dropped:cols", item);
-        }
-      },
-      "pvtAxisContainer pvtHorizList pvtCols",
-      h
-    );
-    const rowAttrsCell = this.makeDnDCell(
-      this.rowAttrs,
-      (e) => {
-        const item = e.item.getAttribute("data-id");
-        if (
-          this.sortonlyFromDragDrop.includes(item) &&
-          (!e.from.classList.contains("pvtRows") ||
-            !e.to.classList.contains("pvtRows"))
-        ) {
-          return;
-        }
-        if (e.from.classList.contains("pvtRows")) {
-          this.propsData.rows.splice(e.oldIndex, 1);
-          this.$emit("dragged:rows", item);
-        }
-        if (e.to.classList.contains("pvtRows")) {
-          this.propsData.rows.splice(e.newIndex, 0, item);
-          this.$emit("dropped:rows", item);
-        }
-      },
-      "pvtAxisContainer pvtVertList pvtRows",
-      h
-    );
     const props = {
       ...this.$props,
       localeStrings: this.localeStrings,
@@ -642,29 +636,17 @@ export default {
       this.rowLimit > 0 &&
       (pivotData.getColKeys().length > this.colLimit ||
         pivotData.getRowKeys().length > this.rowLimit);
-    const rendererCell = this.rendererCell(rendererName, h);
-    const aggregatorCell = this.aggregatorCell(aggregatorName, vals, h);
     const outputCell = this.outputCell(
       props,
       rendererName.indexOf("Chart") > -1,
       h
     );
-    const colGroupSlot = this.$slots.colGroup;
     return h(
       "table",
       {
         staticClass: ["pvtUi"],
       },
       [
-        colGroupSlot ||
-          h("colgroup", [
-            h("col", {
-              attrs: {
-                width: "140px",
-              },
-            }),
-            h("col"),
-          ]),
         h(
           "tbody",
           {
@@ -673,10 +655,7 @@ export default {
             },
           },
           [
-            h("tr", [rendererCell, unusedAttrsCell]),
-            h("tr", [aggregatorCell, colAttrsCell]),
             h("tr", [
-              rowAttrsCell,
               outputSlot
                 ? h("td", { staticClass: "pvtOutput" }, outputSlot)
                 : limitOver
@@ -692,7 +671,8 @@ export default {
       ]
     );
   },
-  renderError(h, error) {
+  // renderError (h, error) {
+  renderError(h) {
     return this.uiRenderError(h);
   },
 };
