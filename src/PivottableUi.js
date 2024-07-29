@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import defaultProps from './helper/common'
 import DraggableAttribute from './DraggableAttribute'
 import Dropdown from './Dropdown'
@@ -537,26 +538,7 @@ export default {
             ]
           );
     },
-    outputCell(props, isPlotlyRenderer, h) {
-      return h(
-        "td",
-        {
-          staticClass: ["pvtOutput"],
-        },
-        [
-          isPlotlyRenderer
-            ? h(PlotlyRenderer[props.rendererName], {
-                props,
-              })
-            : h(Pivottable, {
-                props: {
-                  ...props,
-                  tableMaxWidth: this.tableMaxWidth,
-                },
-              }),
-        ]
-      );
-    },
+
     outputCell (props, isPlotlyRenderer, h) {
       return h('td', {
         staticClass: ['pvtOutput']
